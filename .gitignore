@@ -6,3 +6,6 @@ build/
 
 # Ignore environment files
 .env
+
+# Sentry Config File
+.sentryclirc

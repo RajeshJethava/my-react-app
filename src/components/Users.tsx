@@ -12,6 +12,10 @@ const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editedName, setEditedName] = useState<string>("");
+  const [editedAge, setEditedAge] = useState<number>(0);
+  const [editedSalary, setEditedSalary] = useState<number>(0);
 
   useEffect(() => {
     fetch("http://localhost:8888/users")
@@ -31,6 +35,57 @@ const Users: React.FC = () => {
       });
   }, []);
 
+  const handleDelete = (id: number) => {
+    fetch(`http://localhost:8888/users/${id}`, { method: "DELETE" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete user");
+        }
+        setUsers(users.filter((user) => user.id !== id));
+      })
+      .catch((err) => {
+        // alert(err.message);
+        throw new Error(err.message);
+      });
+  };
+
+  const handleEdit = (user: User) => {
+    setEditingUserId(user.id);
+    setEditedName(user.name);
+    setEditedAge(user.age);
+    setEditedSalary(user.salary);
+  };
+
+  const handleSave = (id: number) => {
+    const userToUpdate = users.find((user) => user.id === id);
+    if (!userToUpdate) return;
+
+    const updatedUser = {
+      name: editedName,
+      age: editedAge,
+      salary: editedSalary,
+    };
+
+    fetch(`http://localhost:8888/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedUser),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to update user");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setUsers(users.map((user) => (user.id === id ? data : user)));
+        setEditingUserId(null);
+      })
+      .catch((err) => {
+        throw new Error(err.message);
+      });
+  };
+
   if (loading) {
     return <div className="users-container">Loading...</div>;
   }
@@ -49,15 +104,54 @@ const Users: React.FC = () => {
             <th>Name</th>
             <th>Age</th>
             <th>Salary</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
               <td>{user.id}</td>
-              <td>{user.name}</td>
-              <td>{user.age}</td>
-              <td>${user.salary.toLocaleString()}</td>
+              <td>
+                {editingUserId === user.id ? (
+                  <input
+                    type="text"
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                  />
+                ) : (
+                  user.name
+                )}
+              </td>
+              <td>
+                {editingUserId === user.id ? (
+                  <input
+                    type="number"
+                    value={editedAge}
+                    onChange={(e) => setEditedAge(Number(e.target.value))}
+                  />
+                ) : (
+                  user.age
+                )}
+              </td>
+              <td>
+                {editingUserId === user.id ? (
+                  <input
+                    type="number"
+                    value={editedSalary}
+                    onChange={(e) => setEditedSalary(Number(e.target.value))}
+                  />
+                ) : (
+                  `$${user.salary.toLocaleString()}`
+                )}
+              </td>
+              <td>
+                {editingUserId === user.id ? (
+                  <button onClick={() => handleSave(user.id)}>Save</button>
+                ) : (
+                  <button onClick={() => handleEdit(user)}>Edit</button>
+                )}
+                <button onClick={() => handleDelete(user.id)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>
