@@ -73,6 +73,7 @@ const Users: React.FC = () => {
     })
       .then((response) => {
         if (!response.ok) {
+          console.error("Testing error handling");
           throw new Error("Failed to update user");
         }
         return response.json();
@@ -83,6 +84,43 @@ const Users: React.FC = () => {
       })
       .catch((err) => {
         throw new Error(err.message);
+      });
+  };
+
+  const handleCreateUser = () => {
+    const newUser = {
+      id: users.length + 1, // Generate a new ID (you can replace this with a backend-generated ID)
+      name: "New User",
+      age: 25,
+      salary: 50000,
+    };
+  
+    // Add the new user to the list
+    fetch("http://localhost:8888/users/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          console.error("Failed to create user");
+          alert("Failed to create user. Please try again.");
+          return; // Stop further execution
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data) {
+          // Update the users list with the new user
+          setUsers((prevUsers) => [...prevUsers, data]); // Directly update the state
+          setEditedName("");
+          setEditedAge(0);
+          setEditedSalary(0);
+        }
+      })
+      .catch((err) => {
+        console.error("Error:", err.message);
+        alert("An unexpected error occurred. Please try again.");
       });
   };
 
@@ -97,6 +135,7 @@ const Users: React.FC = () => {
   return (
     <div className="users-container">
       <h1>User List</h1>
+      <button onClick={handleCreateUser}>Create User</button>
       <table className="users-table">
         <thead>
           <tr>

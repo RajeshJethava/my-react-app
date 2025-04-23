@@ -17,7 +17,7 @@ export const useUsers = () => {
   const [editedSalary, setEditedSalary] = useState<number>(0);
 
   useEffect(() => {
-    fetch("http://localhost:8888/users")
+    fetch("http://localhost:8888/users/")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch user data");
@@ -83,6 +83,7 @@ export const useUsers = () => {
 
   return {
     users,
+    setUsers, // Ensure setUsers is returned here
     loading,
     error,
     editingUserId,
