@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import UserTable from "./UserTable";
 import { fetchUsers, createUser, updateUser, deleteUser, User } from "../../api/userApi";
 import "./Users.css";
 
@@ -31,17 +30,17 @@ const Users: React.FC = () => {
 
   const handleCreateUser = async () => {
     if (!newUser || !newUser.name || !newUser.age || !newUser.salary) {
-      setError("Please fill out all fields for the new user.");
+      alert("Please fill out all fields for the new user.");
       return;
     }
 
     try {
-      const createdUser = await createUser(newUser as User);
-      setUsers((prevUsers) => [...prevUsers, createdUser]);
+      await createUser(newUser as User); // Create the new user
+      const updatedUsers = await fetchUsers(); // Re-fetch the updated user list
+      setUsers(updatedUsers); // Update the state with the new user list
       setNewUser(null); // Clear the new user row
-      setError(null); // Clear any previous error
     } catch (err) {
-      setError("Failed to create user. Please try again." + err);
+      alert("Failed to create user. Please try again.");
     }
   };
 
@@ -107,6 +106,42 @@ const Users: React.FC = () => {
           </tr>
         </thead>
         <tbody>
+          {newUser && (
+            <tr>
+              <td>#</td> {/* Display hash instead of "New" */}
+              <td>
+                <input
+                  type="text"
+                  value={newUser.name}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  value={newUser.age}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({ ...prev, age: Number(e.target.value) }))
+                  }
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  value={newUser.salary}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({ ...prev, salary: Number(e.target.value) }))
+                  }
+                />
+              </td>
+              <td>
+                <button onClick={handleCreateUser}>Save</button>
+                <button onClick={() => setNewUser(null)}>Cancel</button>
+              </td>
+            </tr>
+          )}
           {users.map((user) => (
             <tr key={user.id}>
               <td>{user.id}</td>
@@ -153,42 +188,6 @@ const Users: React.FC = () => {
               </td>
             </tr>
           ))}
-          {newUser && (
-            <tr>
-              <td>New</td>
-              <td>
-                <input
-                  type="text"
-                  value={newUser.name}
-                  onChange={(e) =>
-                    setNewUser((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                />
-              </td>
-              <td>
-                <input
-                  type="number"
-                  value={newUser.age}
-                  onChange={(e) =>
-                    setNewUser((prev) => ({ ...prev, age: Number(e.target.value) }))
-                  }
-                />
-              </td>
-              <td>
-                <input
-                  type="number"
-                  value={newUser.salary}
-                  onChange={(e) =>
-                    setNewUser((prev) => ({ ...prev, salary: Number(e.target.value) }))
-                  }
-                />
-              </td>
-              <td>
-                <button onClick={handleCreateUser}>Save</button>
-                <button onClick={() => setNewUser(null)}>Cancel</button>
-              </td>
-            </tr>
-          )}
         </tbody>
       </table>
     </div>
